@@ -1,54 +1,54 @@
 const express = require('express');
 const cors = require('cors');
-const mongoose = require('mongoose');
 require('dotenv').config();
-
 const connectDB = require('./config/db');
+
+// Connect to MongoDB
+connectDB();
 
 const app = express();
 
-// Connect Database
-connectDB();
-
-// ====================================
-// CORS Configuration
-// ====================================
+// CORS Configuration - Allow Vercel Frontend
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
-  process.env.FRONTEND_URL,
+  'https://campusconnect-three-beta.vercel.app',
+  'https://www.campusconnect-three-beta.vercel.app',
+  'https://campusconnect.page',
+  'https://www.campusconnect.page',
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      // Allow requests with no origin (like mobile apps or Postman)
+      if (!origin) {
+        return callback(null, true);
+      }
+      
+      if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
+        console.warn(`⚠️ CORS blocked origin: ${origin}`);
         callback(new Error('Not allowed by CORS'));
       }
     },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
 
-// ====================================
-// Middleware
-// ====================================
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Request Logging
+// Request logging middleware
 app.use((req, res, next) => {
-  console.log(
-    `[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`
-  );
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path} - Origin: ${req.get('origin')}`);
   next();
 });
 
-// ====================================
 // Routes
-// ====================================
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/resources', require('./routes/resourceRoutes'));
 app.use('/api/events', require('./routes/eventRoutes'));
@@ -57,80 +57,57 @@ app.use('/api/study-requests', require('./routes/studyRequestRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 
-// ====================================
-// Root Route
-// ====================================
-app.get('/', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'CampusConnect API Running',
-    version: '1.0.0',
-    environment: process.env.NODE_ENV,
-    database:
-      mongoose.connection.readyState === 1
-        ? 'connected'
-        : 'disconnected',
-  });
-});
-
-// ====================================
-// Health Check Route
-// ====================================
+// Health check
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     success: true,
-    status: 'healthy',
+    message: '✅ CampusConnect API is running',
     timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
   });
 });
 
-// ====================================
-// 404 Handler
-// ====================================
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: '✅ CampusConnect API is running',
+    version: '1.0.0',
+    environment: process.env.NODE_ENV,
+  });
+});
+
+// 404 handler
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: 'Route not found',
+    message: '❌ Route not found',
   });
 });
 
-// ====================================
-// Global Error Handler
-// ====================================
+// Global error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err);
-
+  console.error(`[${new Date().toISOString()}] Error:`, err);
   res.status(err.statusCode || 500).json({
     success: false,
     message: err.message || 'Internal Server Error',
   });
 });
 
-// ====================================
-// Start Server
-// ====================================
 const PORT = process.env.PORT || 5000;
 
 const server = app.listen(PORT, () => {
-  console.log('\n===================================');
-  console.log(`🚀 CampusConnect Server Running`);
-  console.log(`🌍 Environment : ${process.env.NODE_ENV}`);
-  console.log(`📍 Port        : ${PORT}`);
-  console.log(`🗄️ Database    : MongoDB Connected`);
-  console.log('===================================\n');
+  console.log(`\n✅ CampusConnect Backend Server Running on Port ${PORT}`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV}`);
+  console.log(`📍 API Base URL: https://campusconnect-backend-wa1a.onrender.com/api`);
+  console.log(`🗄️  Database: Connected to MongoDB\n`);
 });
 
-// ====================================
-// Graceful Shutdown
-// ====================================
+// Graceful shutdown
 process.on('SIGINT', () => {
-  console.log('\nShutting down server...');
-
+  console.log('\n\n❌ Server shutting down...');
   server.close(() => {
-    mongoose.connection.close(false, () => {
-      console.log('MongoDB connection closed');
-      process.exit(0);
-    });
+    console.log('✅ Server closed');
+    process.exit(0);
   });
 });
 
