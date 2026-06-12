@@ -1,12 +1,7 @@
 import axios from 'axios';
 
-// Determine API base URL based on environment
-const API_BASE_URL = 
-  import.meta.env.MODE === 'production'
-    ? 'https://campusconnect-backend-wa1a.onrender.com/api'
-    : import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-
-console.log('🔗 API Base URL:', API_BASE_URL);
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -15,7 +10,6 @@ const axiosInstance = axios.create({
   },
 });
 
-// Attach token to all requests
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -24,20 +18,18 @@ axiosInstance.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Handle response errors
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expired or invalid
+      const loginType = localStorage.getItem('loginType');
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      localStorage.removeItem('loginType');
+      window.location.href = loginType === 'admin' ? '/admin/login' : '/login';
     }
     return Promise.reject(error);
   }

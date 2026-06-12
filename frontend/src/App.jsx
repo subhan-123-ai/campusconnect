@@ -3,9 +3,11 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import AppLayout from './layouts/AppLayout';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminShell from './components/AdminShell';
 import { useAuthStore } from './store/authStore';
 import Home from './pages/Home';
 import Login from './pages/Login';
+import AdminLogin from './pages/AdminLogin';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
@@ -31,15 +33,6 @@ function AuthLayout({ children }) {
   );
 }
 
-function AdminLayout({ children }) {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  return (
-    <AppLayout isLoggedIn={isAuthenticated}>
-      <ProtectedRoute requireAdmin>{children}</ProtectedRoute>
-    </AppLayout>
-  );
-}
-
 function App() {
   const initializeAuth = useAuthStore((state) => state.initializeAuth);
 
@@ -53,6 +46,7 @@ function App() {
       <Routes>
         <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
         <Route path="/login" element={<PublicLayout><Login /></PublicLayout>} />
+        <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/register" element={<PublicLayout><Register /></PublicLayout>} />
 
         <Route path="/dashboard" element={<AuthLayout><Dashboard /></AuthLayout>} />
@@ -63,7 +57,15 @@ function App() {
         <Route path="/study-partners" element={<AuthLayout><StudyPartners /></AuthLayout>} />
         <Route path="/complaints" element={<AuthLayout><Complaints /></AuthLayout>} />
         <Route path="/my-complaints" element={<AuthLayout><MyComplaints /></AuthLayout>} />
-        <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
+
+        <Route path="/admin" element={<AdminShell />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="universities" element={<AdminDashboard />} />
+          <Route path="users" element={<AdminDashboard />} />
+          <Route path="resources" element={<AdminDashboard />} />
+          <Route path="events" element={<AdminDashboard />} />
+          <Route path="complaints" element={<AdminDashboard />} />
+        </Route>
 
         <Route path="*" element={<PublicLayout><NotFound /></PublicLayout>} />
       </Routes>

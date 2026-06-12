@@ -25,3 +25,7 @@ Thumbs.db
 
 # Coverage
 coverage/
+
+# Uploaded files (keep directory via middleware)
+uploads/*
+!uploads/.gitkeep

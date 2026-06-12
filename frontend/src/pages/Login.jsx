@@ -124,13 +124,20 @@ const Login = () => {
           </button>
         </form>
 
-        {/* Register Link */}
-        <p className="text-center text-gray-600 mt-6">
-          Don't have an account?{' '}
-          <Link to="/register" className="text-blue-600 font-semibold hover:underline">
-            Register here
+        <div className="mt-6 space-y-3">
+          <Link
+            to="/admin/login"
+            className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-indigo-200 bg-indigo-50 py-2.5 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100"
+          >
+            🛡️ Admin Login
           </Link>
-        </p>
+          <p className="text-center text-gray-600 text-sm">
+            Don't have an account?{' '}
+            <Link to="/register" className="text-blue-600 font-semibold hover:underline">
+              Register here
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

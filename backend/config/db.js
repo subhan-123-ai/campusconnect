@@ -25,9 +25,10 @@ const seedUniversitiesIfEmpty = async () => {
   console.log(`Seeded ${universities.length} universities`);
 };
 
+const seedAdminIfNotExists = require('../utils/seedAdmin');
+
 const connectDB = async () => {
-  const useMemoryDb =
-    process.env.USE_MEMORY_DB === 'true' || process.env.NODE_ENV === 'development';
+  const useMemoryDb = process.env.USE_MEMORY_DB === 'true';
   const uri = process.env.MONGO_URI;
 
   const connectOptions = {
@@ -40,6 +41,7 @@ const connectDB = async () => {
       const conn = await mongoose.connect(uri, connectOptions);
       console.log(`MongoDB Connected: ${conn.connection.host}`);
       await seedUniversitiesIfEmpty();
+      await seedAdminIfNotExists();
       return conn;
     } catch (error) {
       console.error('Atlas/remote MongoDB connection failed:', error.message);
@@ -63,6 +65,7 @@ const connectDB = async () => {
   const conn = await mongoose.connect(memoryUri, connectOptions);
   console.log('MongoDB Connected: in-memory database (local dev)');
   await seedUniversitiesIfEmpty();
+  await seedAdminIfNotExists();
   return conn;
 };
 

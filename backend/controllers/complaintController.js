@@ -42,10 +42,10 @@ exports.submitComplaint = async (req, res) => {
 
     await complaint.save();
 
-    // Notify admins
+    // Notify university admins and all super admins
     const admins = await User.find({
-      university: user.university,
       role: 'admin',
+      $or: [{ university: user.university }, { isSuperAdmin: true }],
     });
 
     for (let admin of admins) {
@@ -115,10 +115,13 @@ exports.getAllComplaints = async (req, res) => {
     const { status, category, page = 1, limit = 10 } = req.query;
 
     const user = await User.findById(req.user.id);
+    const filter = {};
 
-    const filter = {
-      university: user.university,
-    };
+    if (user.role !== 'admin') {
+      filter.university = user.university;
+    } else if (req.query.universityId) {
+      filter.university = req.query.universityId;
+    }
 
     if (status) filter.status = status;
     if (category) filter.category = category;
@@ -127,6 +130,7 @@ exports.getAllComplaints = async (req, res) => {
 
     const complaints = await Complaint.find(filter)
       .populate('submittedBy', 'name email')
+      .populate('university', 'name shortName')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit));

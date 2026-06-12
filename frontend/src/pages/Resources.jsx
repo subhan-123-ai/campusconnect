@@ -33,12 +33,15 @@ const Resources = () => {
     }
   };
 
-  const handleDownload = async (resourceId) => {
+  const handleDownload = async (resource) => {
     try {
-      await resourceService.downloadResource(resourceId);
+      await resourceService.downloadResourceFile(
+        resource._id,
+        resource.fileName || `${resource.title}.pdf`
+      );
       toast.success('Download started!');
     } catch (error) {
-      toast.error('Failed to download resource');
+      toast.error(error.response?.data?.message || 'Failed to download resource');
     }
   };
 
@@ -112,7 +115,7 @@ const Resources = () => {
               </p>
 
               <button
-                onClick={() => handleDownload(resource._id)}
+                onClick={() => handleDownload(resource)}
                 className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-2 rounded-lg hover:shadow-lg transition"
               >
                 ⬇️ Download

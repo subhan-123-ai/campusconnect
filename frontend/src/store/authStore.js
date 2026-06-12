@@ -43,6 +43,7 @@ export const useAuthStore = create((set) => ({
 
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(normalizedUser));
+      localStorage.setItem('loginType', 'student');
 
       set({
         token,
@@ -69,6 +70,34 @@ export const useAuthStore = create((set) => ({
 
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(normalizedUser));
+      localStorage.setItem('loginType', 'student');
+
+      set({
+        token,
+        user: normalizedUser,
+        isAuthenticated: true,
+        isLoading: false,
+      });
+
+      return response.data;
+    } catch (error) {
+      set({ isLoading: false });
+      throw error;
+    }
+  },
+
+  // Admin Login
+  adminLogin: async (formData) => {
+    try {
+      set({ isLoading: true });
+      const response = await axiosInstance.post('/auth/admin/login', formData);
+
+      const { token, user } = response.data;
+      const normalizedUser = normalizeUser(user);
+
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(normalizedUser));
+      localStorage.setItem('loginType', 'admin');
 
       set({
         token,
@@ -88,6 +117,7 @@ export const useAuthStore = create((set) => ({
   logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('loginType');
     set({
       user: null,
       token: null,

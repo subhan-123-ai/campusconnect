@@ -51,11 +51,6 @@ const Navbar = ({ onMenuClick, isLoggedIn, sidebarOpen }) => {
               <Link to="/complaints" className="text-gray-700 hover:text-blue-600 font-medium transition">
                 Complaints
               </Link>
-              {user?.role === 'admin' && (
-                <Link to="/admin" className="text-gray-700 hover:text-blue-600 font-medium transition">
-                  Admin
-                </Link>
-              )}
             </>
           )}
         </div>

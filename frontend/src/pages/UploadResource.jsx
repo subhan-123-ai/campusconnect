@@ -9,8 +9,8 @@ const UploadResource = () => {
     subject: '',
     semester: '',
     description: '',
-    fileUrl: '',
   });
+  const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -33,19 +33,54 @@ const UploadResource = () => {
     });
   };
 
+  const handleFileChange = (e) => {
+    const selected = e.target.files?.[0];
+    if (!selected) return;
+
+    const allowed = [
+      'application/pdf',
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/webp',
+      'image/gif',
+    ];
+
+    if (!allowed.includes(selected.type)) {
+      toast.error('Only PDF and image files are allowed');
+      e.target.value = '';
+      return;
+    }
+
+    if (selected.size > 15 * 1024 * 1024) {
+      toast.error('File size must be under 15MB');
+      e.target.value = '';
+      return;
+    }
+
+    setFile(selected);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.title || !formData.subject || !formData.semester || !formData.fileUrl) {
-      toast.error('Please fill all required fields');
+    if (!formData.title || !formData.subject || !formData.semester || !file) {
+      toast.error('Please fill all required fields and upload a file');
       return;
     }
 
     setLoading(true);
 
     try {
-      await resourceService.uploadResource(formData);
-      toast.success('Resource uploaded successfully!');
+      const payload = new FormData();
+      payload.append('title', formData.title);
+      payload.append('subject', formData.subject);
+      payload.append('semester', formData.semester);
+      payload.append('description', formData.description);
+      payload.append('file', file);
+
+      await resourceService.uploadResource(payload);
+      toast.success('Resource uploaded! Pending admin approval.');
       navigate('/resources');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to upload resource');
@@ -60,7 +95,6 @@ const UploadResource = () => {
         <h1 className="text-3xl font-bold text-gray-800 mb-8">📤 Upload Study Resource</h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Title */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Resource Title *
@@ -75,11 +109,8 @@ const UploadResource = () => {
             />
           </div>
 
-          {/* Subject */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Subject *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Subject *</label>
             <select
               name="subject"
               value={formData.subject}
@@ -88,18 +119,13 @@ const UploadResource = () => {
             >
               <option value="">Select subject</option>
               {subjects.map((subj) => (
-                <option key={subj} value={subj}>
-                  {subj}
-                </option>
+                <option key={subj} value={subj}>{subj}</option>
               ))}
             </select>
           </div>
 
-          {/* Semester */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Semester *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Semester *</label>
             <select
               name="semester"
               value={formData.semester}
@@ -108,18 +134,13 @@ const UploadResource = () => {
             >
               <option value="">Select semester</option>
               {semesters.map((sem) => (
-                <option key={sem} value={sem}>
-                  {sem}
-                </option>
+                <option key={sem} value={sem}>{sem}</option>
               ))}
             </select>
           </div>
 
-          {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
             <textarea
               name="description"
               value={formData.description}
@@ -130,25 +151,26 @@ const UploadResource = () => {
             />
           </div>
 
-          {/* File URL */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              File URL (Cloudinary) *
+              Upload File (PDF or Image) *
             </label>
             <input
-              type="url"
-              name="fileUrl"
-              value={formData.fileUrl}
-              onChange={handleChange}
-              placeholder="https://res.cloudinary.com/..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png,.webp,.gif,application/pdf,image/*"
+              onChange={handleFileChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none file:mr-4 file:rounded file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-700"
             />
+            {file && (
+              <p className="text-sm text-green-600 mt-2">
+                Selected: {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+              </p>
+            )}
             <p className="text-sm text-gray-500 mt-2">
-              Upload your PDF to Cloudinary and paste the URL here
+              Accepted: PDF, JPG, PNG, WEBP, GIF — max 15MB
             </p>
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}

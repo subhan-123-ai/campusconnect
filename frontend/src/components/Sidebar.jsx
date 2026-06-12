@@ -4,8 +4,6 @@ import { useAuthStore } from '../store/authStore';
 export default function Sidebar({ onClose, onNavigate }) {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
-  const isAdmin = user?.role === 'admin';
-
   const studentMenuItems = [
     { label: 'Dashboard', path: '/dashboard', icon: '📊' },
     { label: 'Resources', path: '/resources', icon: '📚' },
@@ -17,12 +15,7 @@ export default function Sidebar({ onClose, onNavigate }) {
     { label: 'Profile', path: '/profile', icon: '👤' },
   ];
 
-  const adminMenuItems = [
-    ...studentMenuItems,
-    { label: 'Admin Dashboard', path: '/admin', icon: '⚙️' },
-  ];
-
-  const menuItems = isAdmin ? adminMenuItems : studentMenuItems;
+  const menuItems = studentMenuItems;
 
   const linkClass = ({ isActive }) =>
     `flex items-center gap-3 px-4 py-3 mx-1 rounded-lg transition mb-1 text-sm font-medium ${

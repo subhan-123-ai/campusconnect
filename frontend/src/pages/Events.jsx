@@ -47,7 +47,7 @@ const Events = () => {
 
     try {
       await eventService.createEvent(formData);
-      toast.success('Event created successfully!');
+      toast.success('Event created! Pending admin approval.');
       setShowModal(false);
       setFormData({ title: '', description: '', location: '', date: '' });
       fetchEvents();

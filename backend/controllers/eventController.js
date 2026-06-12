@@ -32,13 +32,28 @@ exports.createEvent = async (req, res) => {
       image: image || null,
       organizer: req.user.id,
       university: user.university,
+      isApproved: false,
     });
 
     await event.save();
 
+    const admins = await User.find({
+      $or: [{ university: user.university, role: 'admin' }, { isSuperAdmin: true }],
+    });
+
+    for (const admin of admins) {
+      await Notification.create({
+        receiver: admin._id,
+        message: `New event pending approval: ${title}`,
+        type: 'event',
+        relatedId: event._id,
+        relatedModel: 'Event',
+      });
+    }
+
     res.status(201).json({
       success: true,
-      message: 'Event created successfully',
+      message: 'Event created and pending admin approval',
       event,
     });
   } catch (error) {
