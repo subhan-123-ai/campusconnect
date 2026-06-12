@@ -87,7 +87,7 @@ export default function Home() {
           <div className="mb-8 grid grid-cols-2 gap-6 sm:gap-8 md:grid-cols-4">
             <div>
               <h3 className="font-bold mb-4">CampusConnect</h3>
-              <p className="text-gray-400">Building a connected campus community</p>
+              <p className="text-gray-400">Building a Connected Campus Community</p>
             </div>
             <div>
               <h4 className="font-bold mb-4">Features</h4>
