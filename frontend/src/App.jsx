@@ -4,7 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import AppLayout from './layouts/AppLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminShell from './components/AdminShell';
-import { useAuthStore } from './store/authStore';
+import { useAuthStore, selectIsStudentSession } from './store/authStore';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import AdminLogin from './pages/AdminLogin';
@@ -25,9 +25,9 @@ function PublicLayout({ children }) {
 }
 
 function AuthLayout({ children }) {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isStudentSession = useAuthStore(selectIsStudentSession);
   return (
-    <AppLayout isLoggedIn={isAuthenticated}>
+    <AppLayout isLoggedIn={isStudentSession}>
       <ProtectedRoute>{children}</ProtectedRoute>
     </AppLayout>
   );

@@ -10,6 +10,10 @@ const resourceSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    department: {
+      type: String,
+      default: '',
+    },
     semester: {
       type: Number,
       required: true,

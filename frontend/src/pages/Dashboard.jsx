@@ -49,11 +49,10 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="p-8">
-      {/* Welcome Section */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-800">
-          Welcome back, {user?.name}! 👋
+    <div className="px-4 py-6 sm:p-8">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl font-bold text-gray-800 sm:text-3xl lg:text-4xl">
+          Welcome back, {user?.name}!
         </h1>
         <p className="text-gray-600 mt-2">
           {user?.university?.shortName} Campus Portal
@@ -108,8 +107,8 @@ const Dashboard = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow-lg p-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Quick Actions</h2>
+      <div className="rounded-lg bg-white p-5 shadow-lg sm:p-8">
+        <h2 className="mb-4 text-xl font-bold text-gray-800 sm:mb-6 sm:text-2xl">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Link
             to="/resources"

@@ -4,12 +4,15 @@ import { resourceService } from '../services/resourceService';
 import toast from 'react-hot-toast';
 import Loader from '../components/Loader';
 
+const DEPARTMENTS = ['AI', 'CS', 'SE', 'DS', 'BBA', 'EE'];
+
 const Resources = () => {
   const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState({
     subject: '',
+    department: '',
     semester: '',
   });
 
@@ -50,19 +53,18 @@ const Resources = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">📚 Study Resources</h1>
+    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+      <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-2xl font-bold text-gray-800 sm:text-3xl">Study Resources</h1>
         <Link
           to="/upload-resource"
-          className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-2 rounded-lg hover:shadow-lg transition"
+          className="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 px-5 py-2 text-sm text-white transition hover:shadow-lg sm:px-6 sm:text-base"
         >
           + Upload Resource
         </Link>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow-md p-4 mb-6 flex gap-4">
+      <div className="mb-6 flex flex-col gap-3 rounded-lg bg-white p-4 shadow-md sm:flex-row sm:gap-4">
         <input
           type="text"
           placeholder="Search by subject..."
@@ -71,15 +73,30 @@ const Resources = () => {
             setFilters({ ...filters, subject: e.target.value });
             setPage(1);
           }}
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+          className="input-field sm:flex-1"
         />
+        <select
+          value={filters.department}
+          onChange={(e) => {
+            setFilters({ ...filters, department: e.target.value });
+            setPage(1);
+          }}
+          className="input-field sm:w-40"
+        >
+          <option value="">All Departments</option>
+          {DEPARTMENTS.map((dept) => (
+            <option key={dept} value={dept}>
+              {dept}
+            </option>
+          ))}
+        </select>
         <select
           value={filters.semester}
           onChange={(e) => {
             setFilters({ ...filters, semester: e.target.value });
             setPage(1);
           }}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+          className="input-field sm:w-44"
         >
           <option value="">All Semesters</option>
           {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
@@ -90,42 +107,45 @@ const Resources = () => {
         </select>
       </div>
 
-      {/* Resources Grid */}
       {resources.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="mb-8 grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
           {resources.map((resource) => (
             <div
               key={resource._id}
-              className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition"
+              className="rounded-lg bg-white p-5 shadow-md transition hover:shadow-lg sm:p-6"
             >
-              <h3 className="text-lg font-bold text-gray-800 mb-2">{resource.title}</h3>
-              <p className="text-gray-600 text-sm mb-2">{resource.description}</p>
+              <h3 className="mb-2 text-lg font-bold text-gray-800">{resource.title}</h3>
+              <p className="mb-3 line-clamp-3 text-sm text-gray-600">{resource.description}</p>
 
-              <div className="flex gap-2 mb-4 flex-wrap">
-                <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">
+              <div className="mb-4 flex flex-wrap gap-2">
+                {resource.department && (
+                  <span className="rounded-full bg-purple-100 px-3 py-1 text-xs text-purple-800">
+                    {resource.department}
+                  </span>
+                )}
+                <span className="rounded-full bg-blue-100 px-3 py-1 text-xs text-blue-800">
                   {resource.subject}
                 </span>
-                <span className="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full">
+                <span className="rounded-full bg-green-100 px-3 py-1 text-xs text-green-800">
                   Sem {resource.semester}
                 </span>
               </div>
 
-              <p className="text-gray-500 text-sm mb-4">
-                By: {resource.uploadedBy.name}
-              </p>
+              <p className="mb-4 text-sm text-gray-500">By: {resource.uploadedBy.name}</p>
 
               <button
+                type="button"
                 onClick={() => handleDownload(resource)}
-                className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-2 rounded-lg hover:shadow-lg transition"
+                className="w-full rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 py-2 text-white transition hover:shadow-lg"
               >
-                ⬇️ Download
+                Download
               </button>
             </div>
           ))}
         </div>
       ) : (
-        <div className="text-center py-12">
-          <p className="text-gray-600 text-lg">No resources found. Be the first to upload!</p>
+        <div className="py-12 text-center">
+          <p className="text-lg text-gray-600">No resources found. Be the first to upload!</p>
         </div>
       )}
     </div>

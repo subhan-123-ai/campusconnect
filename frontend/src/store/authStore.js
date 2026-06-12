@@ -9,35 +9,79 @@ const normalizeUser = (user) => {
   };
 };
 
-export const useAuthStore = create((set) => ({
+const clearStoredAuth = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  localStorage.removeItem('loginType');
+};
+
+export const useAuthStore = create((set, get) => ({
   user: null,
   token: null,
+  loginType: null,
   isLoading: true,
   isAuthenticated: false,
 
-  // Initialize auth from localStorage
-  initializeAuth: () => {
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
+  clearAuth: () => {
+    clearStoredAuth();
+    set({
+      user: null,
+      token: null,
+      loginType: null,
+      isAuthenticated: false,
+    });
+  },
 
-    if (token && user) {
+  initializeAuth: async () => {
+    const token = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    const loginType = localStorage.getItem('loginType');
+
+    if (!token || !storedUser) {
+      clearStoredAuth();
+      set({
+        user: null,
+        token: null,
+        loginType: null,
+        isAuthenticated: false,
+        isLoading: false,
+      });
+      return;
+    }
+
+    try {
+      const response = await axiosInstance.get('/auth/profile');
+      const normalizedUser = normalizeUser(response.data.user);
+      const expectedLoginType = normalizedUser.role === 'admin' ? 'admin' : 'student';
+
+      if (loginType !== expectedLoginType) {
+        get().clearAuth();
+        set({ isLoading: false });
+        return;
+      }
+
+      localStorage.setItem('user', JSON.stringify(normalizedUser));
+      localStorage.setItem('loginType', expectedLoginType);
+
       set({
         token,
-        user: normalizeUser(JSON.parse(user)),
+        user: normalizedUser,
+        loginType: expectedLoginType,
         isAuthenticated: true,
         isLoading: false,
       });
-    } else {
+    } catch {
+      get().clearAuth();
       set({ isLoading: false });
     }
   },
 
-  // Register
   register: async (formData) => {
     try {
       set({ isLoading: true });
-      const response = await axiosInstance.post('/auth/register', formData);
+      get().clearAuth();
 
+      const response = await axiosInstance.post('/auth/register', formData);
       const { token, user } = response.data;
       const normalizedUser = normalizeUser(user);
 
@@ -48,6 +92,7 @@ export const useAuthStore = create((set) => ({
       set({
         token,
         user: normalizedUser,
+        loginType: 'student',
         isAuthenticated: true,
         isLoading: false,
       });
@@ -59,12 +104,12 @@ export const useAuthStore = create((set) => ({
     }
   },
 
-  // Login
   login: async (formData) => {
     try {
       set({ isLoading: true });
-      const response = await axiosInstance.post('/auth/login', formData);
+      get().clearAuth();
 
+      const response = await axiosInstance.post('/auth/login', formData);
       const { token, user } = response.data;
       const normalizedUser = normalizeUser(user);
 
@@ -75,6 +120,7 @@ export const useAuthStore = create((set) => ({
       set({
         token,
         user: normalizedUser,
+        loginType: 'student',
         isAuthenticated: true,
         isLoading: false,
       });
@@ -86,12 +132,12 @@ export const useAuthStore = create((set) => ({
     }
   },
 
-  // Admin Login
   adminLogin: async (formData) => {
     try {
       set({ isLoading: true });
-      const response = await axiosInstance.post('/auth/admin/login', formData);
+      get().clearAuth();
 
+      const response = await axiosInstance.post('/auth/admin/login', formData);
       const { token, user } = response.data;
       const normalizedUser = normalizeUser(user);
 
@@ -102,6 +148,7 @@ export const useAuthStore = create((set) => ({
       set({
         token,
         user: normalizedUser,
+        loginType: 'admin',
         isAuthenticated: true,
         isLoading: false,
       });
@@ -113,19 +160,10 @@ export const useAuthStore = create((set) => ({
     }
   },
 
-  // Logout
   logout: () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('loginType');
-    set({
-      user: null,
-      token: null,
-      isAuthenticated: false,
-    });
+    get().clearAuth();
   },
 
-  // Update profile
   updateProfile: async (updates) => {
     try {
       const response = await axiosInstance.put('/auth/profile', updates);
@@ -140,3 +178,13 @@ export const useAuthStore = create((set) => ({
     }
   },
 }));
+
+export const selectIsStudentSession = (state) =>
+  state.isAuthenticated &&
+  state.loginType === 'student' &&
+  state.user?.role !== 'admin';
+
+export const selectIsAdminSession = (state) =>
+  state.isAuthenticated &&
+  state.loginType === 'admin' &&
+  state.user?.role === 'admin';

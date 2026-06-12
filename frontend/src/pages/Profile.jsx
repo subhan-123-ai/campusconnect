@@ -32,12 +32,11 @@ const Profile = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-8">
-      <div className="bg-white rounded-lg shadow-lg p-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">My Profile</h1>
+    <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+      <div className="rounded-lg bg-white p-5 shadow-lg sm:p-8">
+        <h1 className="mb-6 text-2xl font-bold text-gray-800 sm:mb-8 sm:text-3xl">My Profile</h1>
 
-        {/* Profile Info */}
-        <div className="grid grid-cols-2 gap-6 mb-8">
+        <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700">Name</label>
             <p className="text-gray-600 py-2">{user?.name}</p>

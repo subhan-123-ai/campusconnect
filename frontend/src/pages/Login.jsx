@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
+import { useAuthStore, selectIsStudentSession } from '../store/authStore';
 import { authService } from '../services/authService';
+import PasswordInput from '../components/PasswordInput';
 import toast from 'react-hot-toast';
 
 const Login = () => {
@@ -14,6 +15,13 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
+  const isStudentSession = useAuthStore(selectIsStudentSession);
+
+  useEffect(() => {
+    if (isStudentSession) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isStudentSession, navigate]);
 
   useEffect(() => {
     const fetchUniversities = async () => {
@@ -56,54 +64,43 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">CampusConnect</h1>
-          <p className="text-gray-600 mt-2">Login to your account</p>
+    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:min-h-screen">
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl sm:p-8">
+        <div className="mb-6 text-center sm:mb-8">
+          <h1 className="text-2xl font-bold text-gray-800 sm:text-3xl">CampusConnect</h1>
+          <p className="mt-2 text-gray-600">Login to your account</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Email */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email
-            </label>
+            <label className="mb-2 block text-sm font-medium text-gray-700">Email</label>
             <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 outline-none transition focus:border-transparent focus:ring-2 focus:ring-blue-500"
               placeholder="your@email.com"
             />
           </div>
 
-          {/* Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Password
-            </label>
-            <input
-              type="password"
+            <label className="mb-2 block text-sm font-medium text-gray-700">Password</label>
+            <PasswordInput
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
               placeholder="••••••••"
             />
           </div>
 
-          {/* University */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              University
-            </label>
+            <label className="mb-2 block text-sm font-medium text-gray-700">University</label>
             <select
               name="universityId"
               value={formData.universityId}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 outline-none transition focus:border-transparent focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Select your university</option>
               {universities.map((uni) => (
@@ -114,11 +111,10 @@ const Login = () => {
             </select>
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold py-2 rounded-lg hover:shadow-lg transition disabled:opacity-50"
+            className="w-full rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 py-2 font-semibold text-white transition hover:shadow-lg disabled:opacity-50"
           >
             {loading ? 'Logging in...' : 'Login'}
           </button>
@@ -129,11 +125,11 @@ const Login = () => {
             to="/admin/login"
             className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-indigo-200 bg-indigo-50 py-2.5 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100"
           >
-            🛡️ Admin Login
+            Admin Login
           </Link>
-          <p className="text-center text-gray-600 text-sm">
-            Don't have an account?{' '}
-            <Link to="/register" className="text-blue-600 font-semibold hover:underline">
+          <p className="text-center text-sm text-gray-600">
+            Don&apos;t have an account?{' '}
+            <Link to="/register" className="font-semibold text-blue-600 hover:underline">
               Register here
             </Link>
           </p>

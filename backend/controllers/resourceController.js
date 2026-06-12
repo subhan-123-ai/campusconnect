@@ -4,6 +4,7 @@ const Resource = require('../models/Resource');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
 const { getPublicFileUrl } = require('../utils/fileUrl');
+const { isValidDepartment } = require('../utils/validators');
 
 const formatResource = (req, resource) => {
   const obj = resource.toObject ? resource.toObject() : resource;
@@ -16,12 +17,12 @@ const formatResource = (req, resource) => {
 // Upload Resource (with file)
 exports.uploadResource = async (req, res) => {
   try {
-    const { title, subject, semester, description } = req.body;
+    const { title, subject, department, semester, description } = req.body;
 
-    if (!title || !subject || !semester) {
+    if (!title || !subject || !department || !semester) {
       return res.status(400).json({
         success: false,
-        message: 'Title, subject, and semester are required',
+        message: 'Title, subject, department, and semester are required',
       });
     }
 
@@ -40,12 +41,20 @@ exports.uploadResource = async (req, res) => {
       });
     }
 
+    if (!isValidDepartment(department)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid department. Choose from AI, CS, SE, DS, BBA, or EE',
+      });
+    }
+
     const user = await User.findById(req.user.id);
     const fileUrl = `/uploads/resources/${req.file.filename}`;
 
     const resource = new Resource({
       title,
       subject,
+      department,
       semester: semesterNum,
       description: description || '',
       fileUrl,
@@ -88,7 +97,7 @@ exports.uploadResource = async (req, res) => {
 // Get Resources (with filters)
 exports.getResources = async (req, res) => {
   try {
-    const { subject, semester, page = 1, limit = 10 } = req.query;
+    const { subject, department, semester, page = 1, limit = 10 } = req.query;
 
     const user = await User.findById(req.user.id);
 
@@ -98,6 +107,7 @@ exports.getResources = async (req, res) => {
     };
 
     if (subject) filter.subject = new RegExp(subject, 'i');
+    if (department) filter.department = department;
     if (semester) filter.semester = parseInt(semester);
 
     const skip = (page - 1) * limit;

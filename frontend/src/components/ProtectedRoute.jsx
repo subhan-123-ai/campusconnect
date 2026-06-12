@@ -1,15 +1,22 @@
 import { Navigate } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
+import { useAuthStore, selectIsStudentSession } from '../store/authStore';
 import Loader from './Loader';
 
 const ProtectedRoute = ({ children, requireAdmin = false }) => {
-  const { isAuthenticated, isLoading, user } = useAuthStore();
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const user = useAuthStore((state) => state.user);
+  const loginType = useAuthStore((state) => state.loginType);
+  const isStudentSession = useAuthStore(selectIsStudentSession);
 
   if (isLoading) {
     return <Loader />;
   }
 
-  if (!isAuthenticated) {
+  if (loginType === 'admin' || user?.role === 'admin') {
+    return <Navigate to="/admin" replace />;
+  }
+
+  if (!isStudentSession) {
     return <Navigate to="/login" replace />;
   }
 

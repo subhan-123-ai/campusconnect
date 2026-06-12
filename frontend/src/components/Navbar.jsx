@@ -1,22 +1,35 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
+import { useAuthStore, selectIsStudentSession } from '../store/authStore';
+
+const navLinks = [
+  { to: '/dashboard', label: 'Dashboard' },
+  { to: '/resources', label: 'Resources' },
+  { to: '/events', label: 'Events' },
+  { to: '/study-partners', label: 'Study Partners' },
+  { to: '/complaints', label: 'Complaints' },
+];
 
 const Navbar = ({ onMenuClick, isLoggedIn, sidebarOpen }) => {
-  const { user, logout } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
+  const isStudentLoggedIn = useAuthStore(selectIsStudentSession) && isLoggedIn;
   const navigate = useNavigate();
   const [showMenu, setShowMenu] = useState(false);
+  const [showMobileNav, setShowMobileNav] = useState(false);
 
   const handleLogout = () => {
     logout();
+    setShowMenu(false);
+    setShowMobileNav(false);
     navigate('/login');
   };
 
   return (
-    <nav className="bg-white shadow-md sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          {isLoggedIn && onMenuClick && (
+    <nav className="sticky top-0 z-50 bg-white shadow-md">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:py-4">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+          {isStudentLoggedIn && onMenuClick && (
             <button
               type="button"
               onClick={onMenuClick}
@@ -28,70 +41,81 @@ const Navbar = ({ onMenuClick, isLoggedIn, sidebarOpen }) => {
               </svg>
             </button>
           )}
-          <Link to={user ? '/dashboard' : '/'} className="text-2xl font-bold text-blue-600">
+          <Link
+            to={isStudentLoggedIn ? '/dashboard' : '/'}
+            className="truncate text-xl font-bold text-blue-600 sm:text-2xl"
+          >
             CampusConnect
           </Link>
         </div>
 
-        <div className="hidden md:flex items-center gap-6">
-          {user && (
-            <>
-              <Link to="/dashboard" className="text-gray-700 hover:text-blue-600 font-medium transition">
-                Dashboard
+        <div className="hidden items-center gap-6 md:flex">
+          {isStudentLoggedIn &&
+            navLinks.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="font-medium text-gray-700 transition hover:text-blue-600"
+              >
+                {link.label}
               </Link>
-              <Link to="/resources" className="text-gray-700 hover:text-blue-600 font-medium transition">
-                Resources
-              </Link>
-              <Link to="/events" className="text-gray-700 hover:text-blue-600 font-medium transition">
-                Events
-              </Link>
-              <Link to="/study-partners" className="text-gray-700 hover:text-blue-600 font-medium transition">
-                Study Partners
-              </Link>
-              <Link to="/complaints" className="text-gray-700 hover:text-blue-600 font-medium transition">
-                Complaints
-              </Link>
-            </>
-          )}
+            ))}
         </div>
 
-        <div className="flex items-center gap-4">
-          {user ? (
-            <div className="relative">
+        <div className="flex items-center gap-2 sm:gap-4">
+          {isStudentLoggedIn ? (
+            <>
               <button
-                onClick={() => setShowMenu(!showMenu)}
-                className="flex items-center gap-2 bg-blue-100 px-4 py-2 rounded-lg hover:bg-blue-200 transition"
+                type="button"
+                onClick={() => setShowMobileNav((open) => !open)}
+                className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 md:hidden"
+                aria-label="Toggle navigation menu"
               >
-                <span className="text-2xl">👤</span>
-                <span className="font-medium text-gray-800 hidden md:inline">{user.name}</span>
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </button>
 
-              {showMenu && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2">
-                  <Link
-                    to="/profile"
-                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    onClick={() => setShowMenu(false)}
-                  >
-                    Profile
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
-                  >
-                    Logout
-                  </button>
-                </div>
-              )}
-            </div>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowMenu(!showMenu)}
+                  className="flex max-w-[180px] items-center gap-2 rounded-lg bg-blue-100 px-2 py-2 transition hover:bg-blue-200 sm:max-w-none sm:px-4"
+                >
+                  <span className="text-xl sm:text-2xl">👤</span>
+                  <span className="truncate font-medium text-gray-800 sm:inline">
+                    {user?.name}
+                  </span>
+                </button>
+
+                {showMenu && (
+                  <div className="absolute right-0 z-50 mt-2 w-48 rounded-lg bg-white py-2 shadow-lg">
+                    <Link
+                      to="/profile"
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      onClick={() => setShowMenu(false)}
+                    >
+                      Profile
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
           ) : (
-            <div className="flex items-center gap-3">
-              <Link to="/login" className="text-gray-700 hover:text-blue-600 font-medium">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Link to="/login" className="text-sm font-medium text-gray-700 hover:text-blue-600 sm:text-base">
                 Login
               </Link>
               <Link
                 to="/register"
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                className="rounded-lg bg-blue-600 px-3 py-2 text-sm text-white transition hover:bg-blue-700 sm:px-4 sm:text-base"
               >
                 Register
               </Link>
@@ -99,6 +123,23 @@ const Navbar = ({ onMenuClick, isLoggedIn, sidebarOpen }) => {
           )}
         </div>
       </div>
+
+      {isStudentLoggedIn && showMobileNav && (
+        <div className="border-t border-gray-100 px-4 py-3 md:hidden">
+          <div className="flex flex-col gap-1">
+            {navLinks.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                onClick={() => setShowMobileNav(false)}
+                className="rounded-lg px-3 py-2 font-medium text-gray-700 hover:bg-gray-100"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </nav>
   );
 };

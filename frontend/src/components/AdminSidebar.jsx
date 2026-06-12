@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
+import { useAuthStore, selectIsAdminSession } from '../store/authStore';
 
 const menuItems = [
   { label: 'Overview', path: '/admin', icon: '📊', end: true },
@@ -11,7 +11,9 @@ const menuItems = [
 ];
 
 export default function AdminSidebar({ onClose, onNavigate }) {
-  const { user, logout } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
+  const isAdminSession = useAuthStore(selectIsAdminSession);
   const navigate = useNavigate();
 
   const linkClass = ({ isActive }) =>
@@ -71,7 +73,9 @@ export default function AdminSidebar({ onClose, onNavigate }) {
       <div className="shrink-0 border-t border-slate-800 p-4">
         <div className="mb-4 rounded-lg bg-slate-800 p-4 text-center">
           <div className="mb-2 text-3xl">🛡️</div>
-          <p className="truncate text-sm font-bold text-white">{user?.name || 'Admin'}</p>
+          <p className="truncate text-sm font-bold text-white">
+            {isAdminSession ? user?.name || 'Admin' : 'Admin'}
+          </p>
           <p className="mt-1 text-xs text-slate-400">Super Admin • All Universities</p>
         </div>
         <button

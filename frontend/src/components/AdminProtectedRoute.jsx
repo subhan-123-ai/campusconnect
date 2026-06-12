@@ -1,15 +1,16 @@
 import { Navigate } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
+import { useAuthStore, selectIsAdminSession } from '../store/authStore';
 import Loader from './Loader';
 
 const AdminProtectedRoute = ({ children }) => {
-  const { isAuthenticated, isLoading, user } = useAuthStore();
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const isAdminSession = useAuthStore(selectIsAdminSession);
 
   if (isLoading) {
     return <Loader />;
   }
 
-  if (!isAuthenticated || user?.role !== 'admin') {
+  if (!isAdminSession) {
     return <Navigate to="/admin/login" replace />;
   }
 

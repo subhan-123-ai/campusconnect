@@ -1,8 +1,10 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
+import { useAuthStore, selectIsStudentSession } from '../store/authStore';
 
 export default function Sidebar({ onClose, onNavigate }) {
-  const { user, logout } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
+  const isStudentSession = useAuthStore(selectIsStudentSession);
   const navigate = useNavigate();
   const studentMenuItems = [
     { label: 'Dashboard', path: '/dashboard', icon: '📊' },
@@ -81,9 +83,13 @@ export default function Sidebar({ onClose, onNavigate }) {
       <div className="shrink-0 border-t border-gray-800 p-4">
         <div className="mb-4 rounded-lg bg-gray-800 p-4 text-center">
           <div className="mb-2 text-3xl">👤</div>
-          <p className="truncate text-sm font-bold text-white">{user?.name || 'Student'}</p>
+          <p className="truncate text-sm font-bold text-white">
+            {isStudentSession ? user?.name || 'Student' : 'Student'}
+          </p>
           <p className="mt-1 text-xs text-gray-400">
-            {universityLabel} • {user?.department || '—'} • Sem {user?.semester || '—'}
+            {isStudentSession
+              ? `${universityLabel} • ${user?.department || '—'} • Sem ${user?.semester || '—'}`
+              : 'Please log in'}
           </p>
         </div>
         <button
